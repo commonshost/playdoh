@@ -1,0 +1,33 @@
+{
+  "name": "play-doh",
+  "version": "1.0.0",
+  "description": "A proof of concept DoH server.",
+  "main": "lib/doh.js",
+  "bin": {
+    "play": "index.js"
+  },
+  "dependencies": {
+    "base64url": "^3.0.0",
+    "dns-packet": "^5.0.3",
+    "pino": "^5.5.0"
+  },
+  "devDependencies": {
+    "flow-bin": "^0.81.0",
+    "flow-remove-types": "^1.2.3",
+    "mocha": "^5.2.0",
+    "mock-req": "^0.2.0",
+    "mock-res": "^0.5.0",
+    "nock": "^10.0.0",
+    "sinon": "^6.3.3",
+    "standard": "^12.0.1"
+  },
+  "scripts": {
+    "build": "flow-remove-types src/ -d lib/",
+    "flow": "flow",
+    "start": "node index.js",
+    "test": "mocha"
+  },
+  "keywords": [],
+  "author": "Kenny Shen <kenny@machinesung.com>",
+  "license": "ISC"
+}
