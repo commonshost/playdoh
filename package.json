@@ -25,6 +25,7 @@
     "build": "flow-remove-types src/ -d lib/",
     "flow": "flow",
     "start": "node index.js",
+    "pretest": "npm run build",
     "test": "mocha"
   },
   "keywords": [],
