@@ -76,14 +76,14 @@ function validateGetParam( u: Url ): boolean {
 
 /* @flow */
 function validateContentType( c: string ): boolean {
-  if( c == 'application/dns-message' )
+  if( c === 'application/dns-message' )
     return true
   return false
 }
 
 /* @flow */
 function validateMethod( m: string ): boolean {
-  if( m == 'GET' || m == 'POST' )
+  if( m === 'GET' || m === 'POST' )
     return true
   return false
 }
@@ -98,15 +98,15 @@ function server(req, res) {
   if( req.url.startsWith( '/dns-query' ) ) {
     if( !this.validateMethod( req.method ) )
       return badRequest( res )
-    if( req.method == 'POST' && !validateContentType( req.headers['content-type'] ) )
+    if( req.method === 'POST' && !validateContentType( req.headers['content-type'] ) )
       return notSupported( res )
-    if( req.method == 'GET'
+    if( req.method === 'GET'
         && !validateContentType( req.headers['accept'] ) )
       return notSupported( res )
-    if( req.method == 'GET'
+    if( req.method === 'GET'
         && !validateGetParam( url.parse( req.url, true ) ) )
       return badRequest( res )
-    if( req.method == 'GET' ) {
+    if( req.method === 'GET' ) {
       buf = base64url.toBuffer( url.parse( req.url, true )['query']['dns'] )
       if( !validatePayload( buf ) )
         return queryExceededLimit( res )
