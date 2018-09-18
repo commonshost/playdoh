@@ -1,13 +1,13 @@
 const http2 = require('http2')
-const {promisify} = require('util')
-const {eventToPromise} = require('./eventToPromise')
+const { promisify } = require('util')
+const { eventToPromise } = require('./eventToPromise')
 
 async function fetch (url, options) {
-  const {origin, pathname, search} = new URL(url)
+  const { origin, pathname, search } = new URL(url)
   const session = http2.connect(origin)
   const reqHeaders = {
     ...options.headers,
-    ...{':path': pathname + search}
+    ...{ ':path': pathname + search }
   }
   const request = session.request(reqHeaders)
   request.end(options.body)

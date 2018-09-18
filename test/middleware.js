@@ -1,11 +1,11 @@
 const test = require('blue-tape')
-const {playdoh} = require('../middleware')
-const {promisify} = require('util')
+const { playdoh } = require('../middleware')
+const { promisify } = require('util')
 const connect = require('connect')
 const http2 = require('http2')
 const dnsPacket = require('dns-packet')
-const {fetch} = require('./helpers/fetch')
-const {encode} = require('base64url')
+const { fetch } = require('./helpers/fetch')
+const { encode } = require('base64url')
 
 const dnsPacketQuery = dnsPacket.encode({
   type: 'query',
@@ -34,7 +34,7 @@ test('Start server with DOH middleware', async (t) => {
   app.use(middleware)
   server = http2.createServer(app)
   await promisify(server.listen).call(server)
-  const {port} = server.address()
+  const { port } = server.address()
   baseUrl = `http://localhost:${port}`
 })
 
