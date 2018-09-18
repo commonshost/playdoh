@@ -1,6 +1,6 @@
-const {createSocket} = require('dgram')
-const {toBuffer} = require('base64url')
-const {decode} = require('dns-packet')
+const { createSocket } = require('dgram')
+const { toBuffer } = require('base64url')
+const { decode } = require('dns-packet')
 
 const {
   BadRequest,
@@ -27,7 +27,7 @@ const dohMediaType = 'application/dns-message'
 const dohMaximumMessageLength = 65535
 const dohMinimumHttpVersionMajor = 2
 
-function smallestTtl (min, {ttl}) {
+function smallestTtl (min, { ttl }) {
   return ttl < min ? ttl : min
 }
 
@@ -50,7 +50,7 @@ function playdoh ({
     const dnsMessage = []
     switch (request.method) {
       case HTTP2_METHOD_GET:
-        const {url} = request
+        const { url } = request
         const dns = new URLSearchParams(url.substr(url.indexOf('?'))).get('dns')
         if (!dns) {
           return next(new BadRequest())
@@ -88,9 +88,7 @@ function playdoh ({
       return next(new InternalServerError())
     }
 
-    socket.once('error', (error) => {
-      next(new BadGateway())
-    })
+    socket.once('error', () => next(new BadGateway()))
 
     socket.once('listening', () => {
       const timer = setTimeout(() => {
@@ -102,12 +100,12 @@ function playdoh ({
       dnsMessage.length = 0
     })
 
-    socket.on('message', (message, {size, port, address}) => {
+    socket.on('message', (message, { size, port, address }) => {
       if (address === resolverAddress && port === resolverPort) {
         if (request.method === HTTP2_METHOD_GET) {
           let answers
           try {
-            ({answers} = decode(message))
+            ({ answers } = decode(message))
           } catch (error) {
             return next(new BadGateway())
           }
