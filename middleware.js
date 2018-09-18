@@ -1,5 +1,4 @@
 const {createSocket} = require('dgram')
-const parseurl = require('parseurl')
 const {toBuffer} = require('base64url')
 const {decode} = require('dns-packet')
 
@@ -51,9 +50,14 @@ function playdoh ({
     const dnsMessage = []
     switch (request.method) {
       case HTTP2_METHOD_GET:
-        const {query} = parseurl(request)
+        const {url} = request
+        const dns = new URLSearchParams(url.substr(url.indexOf('?'))).get('dns')
+        if (!dns) {
+          return next(new BadRequest())
+        }
+        let decoded
         try {
-          const decoded = toBuffer(query.dns)
+          decoded = toBuffer(dns)
         } catch (error) {
           return next(new BadRequest())
         }
@@ -100,15 +104,17 @@ function playdoh ({
 
     socket.on('message', (message, {size, port, address}) => {
       if (address === resolverAddress && port === resolverPort) {
-        let answers
-        try {
-          ({answers} = decode(message))
-        } catch (error) {
-          return next(new BadGateway())
-        }
-        const ttl = answers.reduce(smallestTtl, Infinity)
-        if (Number.isFinite(ttl)) {
-          response.setHeader(HTTP2_HEADER_CACHE_CONTROL, `max-age=${ttl}`)
+        if (request.method === HTTP2_METHOD_GET) {
+          let answers
+          try {
+            ({answers} = decode(message))
+          } catch (error) {
+            return next(new BadGateway())
+          }
+          const ttl = answers.reduce(smallestTtl, Infinity)
+          if (Number.isFinite(ttl)) {
+            response.setHeader(HTTP2_HEADER_CACHE_CONTROL, `max-age=${ttl}`)
+          }
         }
         response.setHeader(HTTP2_HEADER_CONTENT_LENGTH, size)
         response.setHeader(HTTP2_HEADER_CONTENT_TYPE, dohMediaType)
