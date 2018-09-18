@@ -4,8 +4,23 @@ const {promisify} = require('util')
 const connect = require('connect')
 const http2 = require('http2')
 const dnsPacket = require('dns-packet')
+const {fetch} = require('./helpers/fetch')
+const {encode} = require('base64url')
 
-test('Middleware', async (t) => {
+const dnsPacketQuery = dnsPacket.encode({
+  type: 'query',
+  id: 0,
+  flags: dnsPacket.RECURSION_DESIRED,
+  questions: [{
+    type: 'A',
+    class: 'IN',
+    name: 'www.example.com'
+  }]
+})
+
+let server
+let baseUrl
+test('Start server with DOH middleware', async (t) => {
   const options = {
     protocol: 'udp4',
     localAddress: '0.0.0.0',
@@ -17,44 +32,53 @@ test('Middleware', async (t) => {
 
   const app = connect()
   app.use(middleware)
-  const server = http2.createServer(app)
+  server = http2.createServer(app)
   await promisify(server.listen).call(server)
+  const {port} = server.address()
+  baseUrl = `http://localhost:${port}`
+})
 
-  const session = http2.connect(
-    `http://localhost:${server.address().port}`
-  )
-  const request = session.request({
-    ':method': 'POST',
-    ':path': '/',
-    'accept': 'application/dns-message'
+test('DOH using HTTP/2 POST request', async (t) => {
+  const response = await fetch(baseUrl, {
+    headers: {
+      ':method': 'POST',
+      'accept': 'application/dns-message'
+    },
+    body: dnsPacketQuery
   })
-  const packet = dnsPacket.encode({
-    type: 'query',
-    id: 0,
-    flags: dnsPacket.RECURSION_DESIRED,
-    questions: [{
-      type: 'A',
-      class: 'IN',
-      name: 'www.example.com'
-    }]
-  })
-  request.end(packet)
-  request.on('response', async (headers) => {
-    t.is(headers['content-type'], 'application/dns-message')
-    t.is(headers[':status'], 200)
 
-    const chunks = []
-    for await (const chunk of request) {
-      chunks.push(chunk)
+  t.is(response.headers.get('content-type'), 'application/dns-message')
+  t.is(response.headers.get(':status'), 200)
+
+  const dnsPacketResponse = dnsPacket.decode(await response.buffer())
+  t.is(dnsPacketResponse.type, 'response')
+  t.is(dnsPacketResponse.answers.length, 1)
+
+  t.is(response.headers.get('cache-control'), undefined)
+})
+
+test('DOH using HTTP/2 GET request', async (t) => {
+  const url = `${baseUrl}/?dns=${encode(dnsPacketQuery)}`
+  const response = await fetch(url, {
+    headers: {
+      ':method': 'GET',
+      'accept': 'application/dns-message'
     }
-    const body = Buffer.concat(chunks)
-    const response = dnsPacket.decode(body)
-
-    t.is(response.type, 'response')
-    t.is(response.answers.length, 1)
-    t.is(headers['cache-control'], `max-age=${response.answers[0].ttl}`)
-
-    await promisify(session.close).call(session)
-    await promisify(server.close).call(server)
   })
+
+  t.is(response.headers.get('content-type'), 'application/dns-message')
+  t.is(response.headers.get(':status'), 200)
+
+  const dnsPacketResponse = dnsPacket.decode(await response.buffer())
+  t.is(dnsPacketResponse.type, 'response')
+  t.is(dnsPacketResponse.answers.length, 1)
+
+  t.is(
+    response.headers.get('cache-control'),
+    `max-age=${dnsPacketResponse.answers[0].ttl}`
+  )
+})
+
+test('Stop server', (t) => {
+  server.close(t.end)
 })
