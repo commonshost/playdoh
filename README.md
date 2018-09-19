@@ -1,5 +1,7 @@
 # playdoh 🛢
 
+[![Build Status](https://travis-ci.org/qoelet/playdoh.svg?branch=master)](https://travis-ci.org/qoelet/playdoh)
+
 Middleware for Node.js web servers to expose DNS over HTTPS (DoH).
 
 Implemented draft specification: *DNS Queries over HTTPS (DoH)* version 14 [[draft-ietf-doh-dns-over-https-14](https://tools.ietf.org/html/draft-ietf-doh-dns-over-https-14)].
