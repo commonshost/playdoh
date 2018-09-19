@@ -1,5 +1,5 @@
 const test = require('blue-tape')
-const { playdoh } = require('../middleware')
+const { playdoh } = require('..')
 const { promisify } = require('util')
 const connect = require('connect')
 const http2 = require('http2')
