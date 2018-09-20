@@ -1,11 +1,11 @@
 function eventToPromise (emitter, success, failure = 'error') {
   return new Promise((resolve, reject) => {
     function onSuccess (value) {
-      emitter.off(failure, onFailure)
+      emitter.removeListener(failure, onFailure)
       resolve(value)
     }
     function onFailure (error) {
-      emitter.off(success, onSuccess)
+      emitter.removeListener(success, onSuccess)
       reject(error)
     }
     emitter.once(success, onSuccess)
