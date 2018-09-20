@@ -1,6 +1,7 @@
 # playdoh 🛢
 
 [![Build Status](https://travis-ci.org/qoelet/playdoh.svg?branch=master)](https://travis-ci.org/qoelet/playdoh)
+[![npm version](https://badge.fury.io/js/playdoh.svg)](https://badge.fury.io/js/playdoh)
 
 Middleware for Node.js web servers to expose DNS over HTTPS (DoH).
 
