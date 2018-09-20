@@ -1,6 +1,15 @@
 const http2 = require('http2')
 const { promisify } = require('util')
 const { eventToPromise } = require('./eventToPromise')
+const { URL } = require('url')
+
+function readAll (stream, chunks) {
+  return new Promise((resolve, reject) => {
+    stream.on('data', (chunk) => chunks.push(chunk))
+    stream.on('error', reject)
+    stream.once('end', resolve)
+  })
+}
 
 async function fetch (url, options) {
   const { origin, pathname, search } = new URL(url)
@@ -13,9 +22,7 @@ async function fetch (url, options) {
   request.end(options.body)
   const headers = await eventToPromise(request, 'response')
   const chunks = []
-  for await (const chunk of request) {
-    chunks.push(chunk)
-  }
+  await readAll(request, chunks)
   await promisify(session.close).call(session)
   const body = Buffer.concat(chunks)
   chunks.length = 0
