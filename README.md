@@ -26,7 +26,7 @@ const middleware = playdoh(options)
 
 ## Options
 
-**`protocol`** - Defaults to `udp4.` Can be either `udp4` or `udp6` to indicate whether to connect to the resolver over IPv4 or IPv6 respectively.
+**`protocol`** - Defaults to `udp4`. Can be either `udp4` or `udp6` to indicate whether to connect to the resolver over IPv4 or IPv6 respectively.
 
 **`localAddress`** - Defaults to `localhost`. The UDP socket is bound to this address. Use a local-only address (`localhost`, `127.0.0.1` or `::1`) to only accept local DNS resolver responses. Set to empty string to bind to all addresses (`0.0.0.0` or `::0`) and accept remote DNS resolver responses.
 

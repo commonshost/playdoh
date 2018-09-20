@@ -1,6 +1,7 @@
 const { createSocket } = require('dgram')
 const { toBuffer } = require('base64url')
 const { decode } = require('dns-packet')
+const { URLSearchParams } = require('url')
 
 const {
   BadRequest,
@@ -29,6 +30,22 @@ const dohMinimumHttpVersionMajor = 2
 
 function smallestTtl (min, { ttl }) {
   return ttl < min ? ttl : min
+}
+
+function readUntil (stream, chunks, limit) {
+  return new Promise((resolve, reject) => {
+    let totalLength = 0
+    stream.on('data', (chunk) => {
+      totalLength += chunk.length
+      if (totalLength > limit) {
+        reject(new RangeError())
+      } else {
+        chunks.push(chunk)
+      }
+    })
+    stream.on('error', reject)
+    stream.once('end', resolve)
+  })
 }
 
 module.exports.playdoh =
@@ -67,13 +84,10 @@ function playdoh ({
         dnsMessage.push(decoded)
         break
       case HTTP2_METHOD_POST:
-        let totalLength = 0
-        for await (const chunk of request) {
-          totalLength += chunk.length
-          if (totalLength > dohMaximumMessageLength) {
-            return next(new PayloadTooLarge())
-          }
-          dnsMessage.push(chunk)
+        try {
+          await readUntil(request, dnsMessage, dohMaximumMessageLength)
+        } catch (error) {
+          return next(new PayloadTooLarge())
         }
         break
       default:
