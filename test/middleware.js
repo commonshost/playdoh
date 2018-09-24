@@ -3,20 +3,10 @@ const { playdoh } = require('..')
 const { promisify } = require('util')
 const connect = require('connect')
 const http2 = require('http2')
-const dnsPacket = require('dns-packet')
+const { decode } = require('dns-packet')
 const { fetch } = require('./helpers/fetch')
 const { encode } = require('base64url')
-
-const dnsPacketQuery = dnsPacket.encode({
-  type: 'query',
-  id: 0,
-  flags: dnsPacket.RECURSION_DESIRED,
-  questions: [{
-    type: 'A',
-    class: 'IN',
-    name: 'www.example.com'
-  }]
-})
+const { query } = require('./helpers/packet')
 
 let server
 let baseUrl
@@ -44,21 +34,21 @@ test('DOH using HTTP/2 POST request', async (t) => {
       ':method': 'POST',
       'accept': 'application/dns-message'
     },
-    body: dnsPacketQuery
+    body: query()
   })
 
   t.is(response.headers.get('content-type'), 'application/dns-message')
   t.is(response.headers.get(':status'), 200)
 
-  const dnsPacketResponse = dnsPacket.decode(await response.buffer())
-  t.is(dnsPacketResponse.type, 'response')
-  t.is(dnsPacketResponse.answers.length, 1)
+  const { type, answers } = decode(await response.buffer())
+  t.is(type, 'response')
+  t.is(answers.length, 1)
 
   t.is(response.headers.get('cache-control'), undefined)
 })
 
 test('DOH using HTTP/2 GET request', async (t) => {
-  const url = `${baseUrl}/?dns=${encode(dnsPacketQuery)}`
+  const url = `${baseUrl}/?dns=${encode(query())}`
   const response = await fetch(url, {
     headers: {
       ':method': 'GET',
@@ -69,13 +59,13 @@ test('DOH using HTTP/2 GET request', async (t) => {
   t.is(response.headers.get('content-type'), 'application/dns-message')
   t.is(response.headers.get(':status'), 200)
 
-  const dnsPacketResponse = dnsPacket.decode(await response.buffer())
-  t.is(dnsPacketResponse.type, 'response')
-  t.is(dnsPacketResponse.answers.length, 1)
+  const { type, answers } = decode(await response.buffer())
+  t.is(type, 'response')
+  t.is(answers.length, 1)
 
   t.is(
     response.headers.get('cache-control'),
-    `max-age=${dnsPacketResponse.answers[0].ttl}`
+    `max-age=${answers[0].ttl}`
   )
 })
 

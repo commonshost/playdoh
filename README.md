@@ -13,28 +13,69 @@ Note: HTTP/2 is the minimum *recommended* version of HTTP for use with DoH.
 
 ```js
 const { playdoh } = require('playdoh')
+
+// Defaults
 const options = {
-  // Defaults
+  // udp4 (IPv4) or udp6 (IPv6)
   protocol: 'udp4',
-  localAddress: 'localhost',
+
+  // Defaults to 0.0.0.0 (udp4) or ::0 (udp6)
+  localAddress: '',
+
+  // Defaults to 127.0.0.1 (udp4) or ::1 (udp6)
   resolverAddress: '',
+
+  // Standard DNS port
   resolverPort: 53,
+
+  // Maximum DNS lookup duration
   timeout: 10000
 }
+
 const middleware = playdoh(options)
 ```
 
+## Returns: `middleware(request, response, next)`
+
+The middleware function follows the Node.js convention and is compatible with most popular web server frameworks.
+
 ## Options
 
-**`protocol`** - Defaults to `udp4`. Can be either `udp4` or `udp6` to indicate whether to connect to the resolver over IPv4 or IPv6 respectively.
+### `protocol`
 
-**`localAddress`** - Defaults to `localhost`. The UDP socket is bound to this address. Use a local-only address (`localhost`, `127.0.0.1` or `::1`) to only accept local DNS resolver responses. Set to empty string to bind to all addresses (`0.0.0.0` or `::0`) and accept remote DNS resolver responses.
+Default: `udp4`
 
-**`resolverAddress`** - Defaults to `127.0.0.1` or `::1`. The IP address of the DNS resolver. Queries are sent via UDP. See also: [List of public DNS service operators](https://en.wikipedia.org/wiki/Public_recursive_name_server) on Wikipedia.
+Can be either `udp4` or `udp6` to indicate whether to connect to the resolver over IPv4 or IPv6 respectively.
 
-**`resolverPort`** - Defaults to `53`. The port of the DNS resolver.
+### `localAddress`
 
-**`timeout`** - Defaults to `10000`. Number of milliseconds to wait for a response from the DNS resolver.
+Default: `0.0.0.0` (IPv4) or `::0` (IPv6)
+
+The UDP socket is bound to this address.
+
+Use a loopback IP address (`''` empty string, `localhost`, `127.0.0.1`, or `::1`) to only accept local DNS resolver responses.
+
+Use a wildcard IP address (`0.0.0.0` or `::0`) to accept remote DNS resolver responses.
+
+### `resolverAddress`
+
+Default: `127.0.0.1` (IPv4) or `::1` (IPv6)
+
+The IP address of the DNS resolver. Queries are sent via UDP.
+
+See also: [List of public DNS service operators](https://en.wikipedia.org/wiki/Public_recursive_name_server) on Wikipedia.
+
+### `resolverPort`
+
+Default: `53`
+
+The port of the DNS resolver.
+
+### `timeout`
+
+Default: `10000`
+
+Number of milliseconds to wait for a response from the DNS resolver.
 
 ### Connect
 
