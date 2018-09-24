@@ -2,6 +2,8 @@ const { createSocket } = require('dgram')
 const { toBuffer } = require('base64url')
 const { decode } = require('dns-packet')
 const { URLSearchParams } = require('url')
+const { randomFill } = require('crypto')
+const { promisify } = require('util')
 
 const {
   BadRequest,
@@ -40,7 +42,9 @@ function readUntil (stream, chunks, limit) {
       if (totalLength > limit) {
         reject(new RangeError())
       } else {
-        chunks.push(chunk)
+        if (chunk.length > 0) {
+          chunks.push(chunk)
+        }
       }
     })
     stream.on('error', reject)
@@ -50,12 +54,15 @@ function readUntil (stream, chunks, limit) {
 
 module.exports.playdoh =
 function playdoh ({
-  protocol = 'udp4', // or 'udp6'
-  localAddress = 'localhost', // Set empty string for 0.0.0.0 or ::0
-  resolverAddress = '', // Defaults to 127.0.0.1 or ::1
+  protocol = 'udp4',
+  localAddress = '',
+  resolverAddress = '',
   resolverPort = 53,
   timeout = 10000
 } = {}) {
+  if (resolverAddress === '' || resolverAddress === 'localhost') {
+    resolverAddress = protocol === 'udp6' ? '::1' : '127.0.0.1'
+  }
   return async function playdoh (request, response, next) {
     if (request.headers[HTTP2_HEADER_ACCEPT] !== dohMediaType) {
       return next()
@@ -94,6 +101,13 @@ function playdoh ({
         return next(new MethodNotAllowed())
     }
 
+    if (dnsMessage.length === 0 || dnsMessage[0].length < 2) {
+      return next(new BadRequest())
+    }
+    const requestDnsId = dnsMessage[0].readUInt16BE(0)
+    await promisify(randomFill)(dnsMessage[0], 0, 2)
+    const nonceDnsId = dnsMessage[0].readUInt16BE(0)
+
     let socket
     try {
       socket = createSocket(protocol)
@@ -114,25 +128,32 @@ function playdoh ({
       dnsMessage.length = 0
     })
 
-    socket.on('message', (message, { size, port, address }) => {
-      if (address === resolverAddress && port === resolverPort) {
-        if (request.method === HTTP2_METHOD_GET) {
-          let answers
-          try {
-            ({ answers } = decode(message))
-          } catch (error) {
-            return next(new BadGateway())
-          }
-          const ttl = answers.reduce(smallestTtl, Infinity)
-          if (Number.isFinite(ttl)) {
-            response.setHeader(HTTP2_HEADER_CACHE_CONTROL, `max-age=${ttl}`)
-          }
-        }
-        response.setHeader(HTTP2_HEADER_CONTENT_LENGTH, size)
-        response.setHeader(HTTP2_HEADER_CONTENT_TYPE, dohMediaType)
-        response.end(message)
-        socket.close()
+    socket.on('message', (message, { port, address }) => {
+      if (
+        message.length < 2 ||
+        message.readUInt16BE(0) !== nonceDnsId ||
+        address !== resolverAddress ||
+        port !== resolverPort
+      ) {
+        return
       }
+      message.writeUInt16BE(requestDnsId, 0)
+      if (request.method === HTTP2_METHOD_GET) {
+        let answers
+        try {
+          ({ answers } = decode(message))
+        } catch (error) {
+          return next(new BadGateway())
+        }
+        const ttl = answers.reduce(smallestTtl, Infinity)
+        if (Number.isFinite(ttl)) {
+          response.setHeader(HTTP2_HEADER_CACHE_CONTROL, `max-age=${ttl}`)
+        }
+      }
+      response.setHeader(HTTP2_HEADER_CONTENT_LENGTH, message.length)
+      response.setHeader(HTTP2_HEADER_CONTENT_TYPE, dohMediaType)
+      response.end(message)
+      socket.close()
     })
   }
 }
