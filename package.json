@@ -1,6 +1,6 @@
 {
   "name": "playdoh",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "DNS over HTTPS middleware",
   "main": "middleware.js",
   "repository": "github:qoelet/playdoh",
