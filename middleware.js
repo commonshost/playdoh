@@ -111,7 +111,7 @@ function playdoh ({
     let socket
     try {
       socket = createSocket(protocol)
-      socket.bind(localAddress)
+      socket.bind({ address: localAddress, exclusive: true })
     } catch (error) {
       return next(new InternalServerError())
     }

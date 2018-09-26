@@ -7,6 +7,7 @@ const { decode } = require('dns-packet')
 const { fetch } = require('./helpers/fetch')
 const { encode } = require('base64url')
 const { query } = require('./helpers/packet')
+const { dnsServer } = require('./helpers/dnsServer')
 
 let server
 let baseUrl
@@ -14,7 +15,7 @@ test('Start server with DOH middleware', async (t) => {
   const options = {
     protocol: 'udp4',
     localAddress: '0.0.0.0',
-    resolverAddress: '8.8.8.8',
+    resolverAddress: dnsServer(),
     resolverPort: 53,
     timeout: 5000
   }
