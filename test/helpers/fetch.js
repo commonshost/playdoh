@@ -27,6 +27,7 @@ async function fetch (url, options) {
   const body = Buffer.concat(chunks)
   chunks.length = 0
   return {
+    ok: headers[':status'] < 400,
     get headers () { return new Map(Object.entries(headers)) },
     async buffer () { return body },
     async text () { return body.toString() },
