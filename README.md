@@ -7,6 +7,26 @@ Middleware for Node.js web servers to expose DNS over HTTPS (DoH).
 
 Implemented draft specification: *DNS Queries over HTTPS (DoH)* version 14 [[draft-ietf-doh-dns-over-https-14](https://tools.ietf.org/html/draft-ietf-doh-dns-over-https-14)].
 
+## Demo: Try it with Firefox
+
+Playdoh powers the 🐑 [Commons Host](https://commons.host) DNS over HTTPS service.
+
+Configure Firefox to use Commons Host DNS over HTTPS in 3 steps.
+
+0. Use Firefox 62+
+1. Browse to: `about:config`
+1. Search: `network.trr.`
+1. Configure:
+
+   | Preference Name | Value |
+   |-|-|
+   | `network.trr.mode` | 2 |
+   | `network.trr.uri` | https://commons.host |
+
+Done! You are now using the Trusted Recursive Resolver (TRR). Enjoy a more private and secure Internet.
+
+![Firefox settings](./docs/firefox-settings.png)
+
 ## Usage
 
 Note: HTTP/2 is the minimum *recommended* version of HTTP for use with DoH.
