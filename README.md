@@ -5,7 +5,7 @@
 
 Middleware for Node.js web servers to expose DNS over HTTPS (DoH).
 
-Implemented draft specification: *DNS Queries over HTTPS (DoH)* version 14 [[draft-ietf-doh-dns-over-https-14](https://tools.ietf.org/html/draft-ietf-doh-dns-over-https-14)].
+Implement: [*DNS Queries over HTTPS (DoH)* [RFC8484]](https://tools.ietf.org/rfc/rfc8484.txt)].
 
 ## Demo: Try it with Firefox
 
