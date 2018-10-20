@@ -126,6 +126,12 @@ fastify.use(middleware)
 fastify.listen(443)
 ```
 
+## References
+
+- https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Clients#DNSPrivacyClients-DOH
+
+- https://github.com/curl/curl/wiki/DNS-over-HTTPS
+
 ## Credits
 
 Made by [Kenny Shen](https://www.machinesung.com) and [Sebastiaan Deckers](https://twitter.com/sebdeckers) for 🐑 [Commons Host](https://commons.host).
