@@ -5,15 +5,26 @@
 
 Middleware for Node.js web servers to expose DNS over HTTPS (DoH).
 
-Implement: [*DNS Queries over HTTPS (DoH)* [RFC8484]](https://tools.ietf.org/rfc/rfc8484.txt)].
+Implement: [*DNS Queries over HTTPS (DoH)* [RFC8484]](https://tools.ietf.org/rfc/rfc8484.txt).
 
 ## Demo: Try it with Firefox
 
-Playdoh powers the 🐑 [Commons Host](https://commons.host) DNS over HTTPS service.
+Configure Firefox to use Commons Host DNS over HTTPS in 3 steps. Enjoy a more private and secure Internet.
 
-Configure Firefox to use Commons Host DNS over HTTPS in 3 steps.
+Playdoh powers the 🐑 [Commons Host](https://commons.host) DNS over HTTPS service running on >20 global edge servers. The service is free and public. No tampering, no filtering, no logging.
 
-0. Use Firefox 62+
+### Using Firefox 64+
+
+1. Open **Preferences** and under **Network Settings** press the **Settings...** button.
+
+1. Check **Enable DNS over HTTPS**
+
+1. Enter in the **URL** field: `https://commons.host`
+
+![Firefox DoH settings](./docs/firefox-doh-settings.png)
+
+### Using Firefox 62
+
 1. Browse to: `about:config`
 1. Search: `network.trr.`
 1. Configure:
@@ -22,8 +33,6 @@ Configure Firefox to use Commons Host DNS over HTTPS in 3 steps.
    |-|-|
    | `network.trr.mode` | 2 |
    | `network.trr.uri` | https://commons.host |
-
-Done! You are now using the Trusted Recursive Resolver (TRR). Enjoy a more private and secure Internet.
 
 ![Firefox settings](./docs/firefox-settings.png)
 
